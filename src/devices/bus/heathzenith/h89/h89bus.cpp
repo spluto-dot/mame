@@ -123,6 +123,10 @@ ROM_START(h89bus)
 	// MMS (Magnolia Micro Systems) I/O decoding
 	ROM_SYSTEM_BIOS(2, "444-61c", "MMS decoding (444-61c)")
 	ROMX_LOAD( "444-61c.bin",  0x000000, 0x000100, CRC(e7122061) SHA1(33c124f44c0f9cb99c9b17ad15411b4bc6407eae), ROM_BIOS(2))
+
+	// CDR Systems
+	ROM_SYSTEM_BIOS(3, "cdr86", "CDR decoding (CDR86)")
+	ROMX_LOAD( "cdr86.bin",  0x000000, 0x000100, CRC(d35e4063) SHA1(879f9d265d77f8a74c70febd9a80d6896ab8ec7e), ROM_BIOS(3))
 ROM_END
 
 //**************************************************************************
@@ -146,9 +150,6 @@ h89bus_device::h89bus_device(const machine_config &mconfig, device_type type, co
 	m_out_int3_cb(*this),
 	m_out_int4_cb(*this),
 	m_out_int5_cb(*this),
-	m_out_fdcirq_cb(*this),
-	m_out_fdcdrq_cb(*this),
-	m_out_blockirq_cb(*this),
 	m_out_fmwe_cb(*this),
 	m_out_wait_cb(*this),
 	m_in_tlb_cb(*this, 0),
@@ -279,7 +280,7 @@ void h89bus_device::io_dispatch_w(offs_t offset, u8 data)
 
 	if (decode)
 	{
-		if (decode & H89_GPP) m_out_gpp_cb(offset, data);
+		if ((decode & H89_GPP) && ((offset & 7) == 2)) m_out_gpp_cb(offset, data);
 		if (decode & H89_NMI) { m_out_nmi_cb(offset, data); return; }
 		if (decode & H89_TERM) { m_out_tlb_cb(offset & 7, data); return; }
 
@@ -318,21 +319,6 @@ void h89bus_device::set_int4_line(int state)
 void h89bus_device::set_int5_line(int state)
 {
 	m_out_int5_cb(state);
-}
-
-void h89bus_device::set_fdcirq_line(int state)
-{
-	m_out_fdcirq_cb(state);
-}
-
-void h89bus_device::set_fdcdrq_line(int state)
-{
-	m_out_fdcdrq_cb(state);
-}
-
-void h89bus_device::set_blockirq_line(int state)
-{
-	m_out_blockirq_cb(state);
 }
 
 void h89bus_device::set_fmwe_line(int state)

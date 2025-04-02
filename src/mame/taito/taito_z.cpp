@@ -254,7 +254,7 @@ M4300099A CHASE HQ DX (sticker for DX cabinet)
 |                                          |TC0100SCN|      43256        |-|
 |             16MHz                        |         |                   |
 |                           TMM2063        |---------|      43256        |
-|          TC0050DCA                   |---------|                       |-|
+|          TC0060DCA                   |---------|                       |-|
 |            Y3016-F        TMM2063    |TAITO    | |------|              | |
 |                                      |TC0170ABT| |TAITO |              | |
 |        TL074 TL074                   |         | |TC0110|   B52-01.IC7 | |
@@ -1547,7 +1547,6 @@ void nightstr_state::nightstr_motor_w(offs_t offset, u16 data)
 		m_motor_debug = data;
 		break;
 	}
-
 }
 
 void nightstr_state::nightstr_lamps_w(u8 data)
@@ -2551,8 +2550,8 @@ static INPUT_PORTS_START( bsharkjjs )
 	PORT_BIT( 0x02, IP_ACTIVE_LOW, IPT_START2 )
 	PORT_BIT( 0x04, IP_ACTIVE_LOW, IPT_JOYSTICK_UP ) PORT_8WAY PORT_PLAYER(1)
 	PORT_BIT( 0x08, IP_ACTIVE_LOW, IPT_JOYSTICK_DOWN ) PORT_8WAY PORT_PLAYER(1)
-	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT ) PORT_8WAY PORT_PLAYER(1)
-	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT ) PORT_8WAY PORT_PLAYER(1)
+	PORT_BIT( 0x10, IP_ACTIVE_LOW, IPT_JOYSTICK_RIGHT ) PORT_8WAY PORT_PLAYER(1)
+	PORT_BIT( 0x20, IP_ACTIVE_LOW, IPT_JOYSTICK_LEFT ) PORT_8WAY PORT_PLAYER(1)
 	PORT_BIT( 0x40, IP_ACTIVE_LOW, IPT_BUTTON1 ) PORT_NAME("Fire") PORT_PLAYER(1)   /* "Fire" */
 	PORT_BIT( 0x80, IP_ACTIVE_LOW, IPT_BUTTON2 ) PORT_NAME("Warp") PORT_PLAYER(1)   /* Same as Fire, but called "Warp" in Service Mode */
 INPUT_PORTS_END

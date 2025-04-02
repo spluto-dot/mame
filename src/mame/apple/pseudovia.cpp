@@ -33,11 +33,16 @@ pseudovia_device::pseudovia_device(const machine_config &mconfig, const char *ta
 	m_in_b_handler(*this, 0),
 	m_in_config_handler(*this, 0),
 	m_in_video_handler(*this, 0),
+	m_in_msc_handler(*this, 0),
 	m_out_a_handler(*this),
 	m_out_b_handler(*this),
 	m_out_config_handler(*this),
-	m_out_video_handler(*this)
+	m_out_video_handler(*this),
+	m_out_msc_handler(*this),
+	m_pseudovia_ier(0),
+	m_pseudovia_ifr(0)
 {
+	std::fill_n(m_pseudovia_regs, 256, 0);
 }
 
 void pseudovia_device::device_start()
@@ -45,13 +50,10 @@ void pseudovia_device::device_start()
 	save_item(NAME(m_pseudovia_regs));
 	save_item(NAME(m_pseudovia_ier));
 	save_item(NAME(m_pseudovia_ifr));
-
-	m_pseudovia_ier = m_pseudovia_ifr = 0;
 }
 
 void pseudovia_device::device_reset()
 {
-	std::fill_n(m_pseudovia_regs, 256, 0);
 	m_pseudovia_regs[2] = 0x7f;
 }
 
@@ -97,12 +99,26 @@ void pseudovia_device::asc_irq_w(int state)
 {
 	if (state == ASSERT_LINE)
 	{
-		m_pseudovia_regs[3] |= 0x10; // any VIA 2 interrupt | sound interrupt
+		m_pseudovia_regs[3] |= 0x10; // any VIA 2 interrupt | CB1 interrupt
 		pseudovia_recalc_irqs();
 	}
 	else
 	{
 		m_pseudovia_regs[3] &= ~0x10;
+		pseudovia_recalc_irqs();
+	}
+}
+
+void pseudovia_device::scsi_irq_w(int state)
+{
+	if (state == ASSERT_LINE)
+	{
+		m_pseudovia_regs[3] |= 0x08; // any VIA 2 interrupt | CB2 interrupt
+		pseudovia_recalc_irqs();
+	}
+	else
+	{
+		m_pseudovia_regs[3] &= ~0x08;
 		pseudovia_recalc_irqs();
 	}
 }
@@ -166,6 +182,11 @@ uint8_t pseudovia_device::read(offs_t offset)
 		if ((offset == 0x12) || (offset == 0x13))
 		{
 			data &= ~0x80;
+		}
+
+		if ((offset >= 0x20) && (offset <= 0x2f))
+		{
+			data = m_in_msc_handler(offset & 0xf);
 		}
 	}
 	else
@@ -258,6 +279,10 @@ void pseudovia_device::write(offs_t offset, uint8_t data)
 			break;
 
 		default:
+			if ((offset >= 0x20) && (offset <= 0x2f))
+			{
+				m_out_msc_handler(offset & 0xf, data);
+			}
 			m_pseudovia_regs[offset] = data;
 			break;
 		}
