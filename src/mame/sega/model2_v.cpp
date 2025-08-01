@@ -93,6 +93,8 @@
 
 #include <cmath>
 #include <limits>
+#define ENABLE_BILINEAR_M2 1
+
 
 #define pz      p[0]
 #define pu      p[1]
@@ -241,6 +243,31 @@ static int32_t clip_polygon(poly_vertex *v, int32_t num_vertices, poly_vertex *v
 
 	return outcount;
 }
+
+
+#if ENABLE_BILINEAR_M2
+inline uint16_t bilinear_sample(const uint16_t* tex, int width, int height, float u, float v)
+{
+    int x = (int)u;
+    int y = (int)v;
+    float fx = u - x;
+    float fy = v - y;
+
+    if (x < 0 || x + 1 >= width || y < 0 || y + 1 >= height)
+        return tex[(y * width + x) & (width * height - 1)]; // fallback
+
+    uint16_t p00 = tex[y * width + x];
+    uint16_t p10 = tex[y * width + (x + 1)];
+    uint16_t p01 = tex[(y + 1) * width + x];
+    uint16_t p11 = tex[(y + 1) * width + (x + 1)];
+
+    float i0 = (1.0f - fx) * p00 + fx * p10;
+    float i1 = (1.0f - fx) * p01 + fx * p11;
+    float value = (1.0f - fy) * i0 + fy * i1;
+
+    return static_cast<uint16_t>(value);
+}
+#endif
 
 inline bool model2_state::check_culling( raster_state *raster, u32 attr, float min_z, float max_z )
 {
